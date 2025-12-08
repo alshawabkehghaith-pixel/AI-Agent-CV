@@ -25,27 +25,28 @@
 </head>
 <body>
   <!-- Application Header -->
-  <header>
-    <div class="container">
-      <h1>
-        <i class="fas fa-user-graduate"></i> SkillMatch Pro
-      </h1>
-      <p class="tagline">
-        AI-powered training and certification recommendations
-      </p>
+  <header class="site-header">
+    <div class="site-header-inner container">
+      <div class="brand">
+        <i class="fas fa-user-graduate"></i>
+        <div>
+          <h1>SkillMatch Pro</h1>
+          <p class="tagline">AI-powered training and certification recommendations</p>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Main Content Container -->
-  <div class="container">
+  <main class="container">
     <div class="main-content">
       <!-- Chat Interface Section -->
-      <section class="chat-section">
-        <h2>
-          <i class="fas fa-comments"></i> Chat Assistant
-        </h2>
-        <div class="chat-messages" id="chat-messages">
-          <!-- Initial bot message -->
+      <section class="chat-section card" aria-label="Chat Assistant">
+        <div class="section-header">
+          <h2><i class="fas fa-comments"></i> Chat Assistant</h2>
+        </div>
+    
+        <div id="chat-messages" class="chat-messages" aria-live="polite">
           <div class="message bot-message">
             Hello! I'm your training and certification assistant. I can help you:
             <ul>
@@ -56,101 +57,49 @@
             How can I help you today?
           </div>
         </div>
-        <!-- Chat Input Area -->
+    
         <div class="chat-input">
-          <input
-            type="text"
-            id="user-input"
-            placeholder="Ask about training programs, upload CVs, or set rules..."
-          />
-          <button id="send-button">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+          <input id="user-input" type="text" placeholder="Ask about training programs, upload CVs, or set rules..." autocomplete="off" />
+          <button id="send-button"><i class="fas fa-paper-plane"></i></button>
         </div>
       </section>
 
-      <!-- Side Panel for Upload and Rules -->
-      <div class="side-panel">
-        <!-- CV Upload Section -->
-        <section class="panel-section upload-section">
-          <h2>
-            <i class="fas fa-file-upload"></i> Upload CVs
-          </h2>
-          <div class="file-upload-area" id="cv-upload-area">
-            <i class="fas fa-cloud-upload-alt fa-3x"></i>
-            <p>Drag & drop CV files here</p>
-            <p>or click to browse</p>
-            <!-- Hidden file input to handle file selection -->
-            <input
-              type="file"
-              id="file-input"
-              multiple
-              accept=".pdf,.docx,.txt"
-            />
+      <!-- Side panel -->
+      <aside class="side-panel">
+        <section class="panel-section card upload-section">
+          <h3><i class="fas fa-file-upload"></i> Upload CVs</h3>
+          <div id="cv-upload-area" class="file-upload-area" tabindex="0">
+            <i class="fas fa-cloud-upload-alt fa-2x"></i>
+            <p class="muted">Drag & drop CV files here or click to browse</p>
+            <input id="file-input" type="file" multiple accept=".pdf,.docx,.txt" />
           </div>
-          <button
-            id="analyze-button"
-            style="width: 100%; margin-top: 15px;"
-          >
-            <i class="fas fa-brain"></i> Analyze CVs
-          </button>
-          <!-- Status messages for file upload -->
-          <div id="upload-status"></div>
+          <button id="analyze-button" class="primary action-full"><i class="fas fa-brain"></i> Analyze CVs</button>
+          <div id="upload-status" class="status-area"></div>
         </section>
-
-        <!-- ===================== CV RESULTS MODAL ===================== -->
-        <!-- <div id="cvModal" class="modal">
-          <div class="modal-content">
-            <span class="close-modal">&times;</span>
-
-            <h2>CV Analysis Results</h2>
-
-            <div id="cvTabsContainer"></div>
-
-            <div id="cvResultsContainer" class="tab-content-container"></div>
-
-            <button id="submitCvReview" class="primary-btn">Submit</button>
-          </div>
-        </div> -->
-        <!-- ============================================================ -->
-         <!-- ================= CV REVIEW MODAL ===================== -->
-          <div id="cvModal" class="cv-modal">
-            <div class="cv-modal-content">
-
-              <span class="cv-close-btn">&times;</span>
-
-              <h2>CV Analysis Review</h2>
-
-              <div id="cvTabsContainer" class="cv-tabs"></div>
-
-              <div id="cvResultsContainer" class="cv-results"></div>
-
-              <button id="submitCvReview" class="cv-submit-btn">Submit</button>
-            </div>
-          </div>
-        <!-- ======================================================== -->
-
-         
-        <!-- Business Rules Section -->
-        <section class="panel-section rules-section">
-          <h2>
-            <i class="fas fa-gavel"></i> Business Rules
-          </h2>
-          <textarea
-            id="rules-input"
-            placeholder="Add your business rules here, one per line.&#10;e.g., 'Recommend PMP only if the candidate has 5+ years of experience.'"
-          ></textarea>
-          <button
-            id="update-rules"
-            style="width: 100%; margin-top: 10px;"
-          >
-            <i class="fas fa-sync-alt"></i> Update Rules
-          </button>
-          <!-- Status messages for rule updates -->
-          <div id="rules-status"></div>
+    
+        <section class="panel-section card rules-section">
+          <h3><i class="fas fa-gavel"></i> Business Rules</h3>
+          <textarea id="rules-input" placeholder="Add your business rules here, one per line."></textarea>
+          <button id="update-rules" class="primary action-full"><i class="fas fa-sync-alt"></i> Update Rules</button>
+          <div id="rules-status" class="status-area"></div>
         </section>
+      </aside>
+    </div>
+
+          
+    <div id="cvModal" class="cv-modal" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle" hidden>
+      <div class="cv-modal-content">
+        <button class="cv-close-btn" aria-label="Close CV modal">&times;</button>
+        <h2 id="cvModalTitle">CV Analysis Review</h2>
+    
+        <div id="cvTabsContainer" class="cv-tabs" role="tablist"></div>
+        <div id="cvResultsContainer" class="cv-results" role="region"></div>
+        <button id="submitCvReview" class="cv-submit-btn">Submit</button>
       </div>
     </div>
+        <!-- ======================================================== -->
+          <!-- Status messages for rule updates -->
+          <div id="rules-status"></div>
 
     <!-- Section to Display Analysis Results -->
     <section class="results-section hidden" id="results-section">
@@ -159,9 +108,8 @@
       </h2>
       <div id="recommendations-container">
         <!-- Results will be dynamically populated here by JavaScript -->
-      </div>
     </section>
-  </div>
+  </main>
 
   <!-- External Libraries for File Parsing -->
   <!-- PDF.js for parsing PDF files -->
@@ -180,3 +128,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
