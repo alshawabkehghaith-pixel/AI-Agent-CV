@@ -97,7 +97,7 @@ export function showTypingIndicator() {
   const typingDiv = document.createElement("div");
   typingDiv.className = "message bot-message typing-indicator";
   typingDiv.id = "typing-indicator";
-  typingDiv.innerHTML = '<span class="typing-ellipsis">...</span>';
+  typingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
 
   chatMessages.appendChild(typingDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
