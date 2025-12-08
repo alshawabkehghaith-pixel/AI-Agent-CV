@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>SkillMatch Pro</title>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome for icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Application Header -->
+  <header>
+    <div class="container">
+      <h1>
+        <i class="fas fa-user-graduate"></i> SkillMatch Pro
+      </h1>
+      <p class="tagline">
+        AI-powered training and certification recommendations
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <div class="container">
+    <div class="main-content">
+      <!-- Chat Interface Section -->
+      <section class="chat-section">
+        <h2>
+          <i class="fas fa-comments"></i> Chat Assistant
+        </h2>
+        <div class="chat-messages" id="chat-messages">
+          <!-- Initial bot message -->
+          <div class="message bot-message">
+            Hello! I'm your training and certification assistant. I can help you:
+            <ul>
+              <li>Discuss training programs and certificates</li>
+              <li>Analyze CVs for suitable recommendations</li>
+              <li>Adjust recommendations based on your business rules</li>
+            </ul>
+            How can I help you today?
+          </div>
+        </div>
+        <!-- Chat Input Area -->
+        <div class="chat-input">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Ask about training programs, upload CVs, or set rules..."
+          />
+          <button id="send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- Side Panel for Upload and Rules -->
+      <div class="side-panel">
+        <!-- CV Upload Section -->
+        <section class="panel-section upload-section">
+          <h2>
+            <i class="fas fa-file-upload"></i> Upload CVs
+          </h2>
+          <div class="file-upload-area" id="cv-upload-area">
+            <i class="fas fa-cloud-upload-alt fa-3x"></i>
+            <p>Drag & drop CV files here</p>
+            <p>or click to browse</p>
+            <!-- Hidden file input to handle file selection -->
+            <input
+              type="file"
+              id="file-input"
+              multiple
+              accept=".pdf,.docx,.txt"
+            />
+          </div>
+          <button
+            id="analyze-button"
+            style="width: 100%; margin-top: 15px;"
+          >
+            <i class="fas fa-brain"></i> Analyze CVs
+          </button>
+          <!-- Status messages for file upload -->
+          <div id="upload-status"></div>
+        </section>
+
+        <!-- ===================== CV RESULTS MODAL ===================== -->
+        <!-- <div id="cvModal" class="modal">
+          <div class="modal-content">
+            <span class="close-modal">&times;</span>
+
+            <h2>CV Analysis Results</h2>
+
+            <div id="cvTabsContainer"></div>
+
+            <div id="cvResultsContainer" class="tab-content-container"></div>
+
+            <button id="submitCvReview" class="primary-btn">Submit</button>
+          </div>
+        </div> -->
+        <!-- ============================================================ -->
+         <!-- ================= CV REVIEW MODAL ===================== -->
+          <div id="cvModal" class="cv-modal">
+            <div class="cv-modal-content">
+
+              <span class="cv-close-btn">&times;</span>
+
+              <h2>CV Analysis Review</h2>
+
+              <div id="cvTabsContainer" class="cv-tabs"></div>
+
+              <div id="cvResultsContainer" class="cv-results"></div>
+
+              <button id="submitCvReview" class="cv-submit-btn">Submit</button>
+            </div>
+          </div>
+        <!-- ======================================================== -->
+
+         
+        <!-- Business Rules Section -->
+        <section class="panel-section rules-section">
+          <h2>
+            <i class="fas fa-gavel"></i> Business Rules
+          </h2>
+          <textarea
+            id="rules-input"
+            placeholder="Add your business rules here, one per line.&#10;e.g., 'Recommend PMP only if the candidate has 5+ years of experience.'"
+          ></textarea>
+          <button
+            id="update-rules"
+            style="width: 100%; margin-top: 10px;"
+          >
+            <i class="fas fa-sync-alt"></i> Update Rules
+          </button>
+          <!-- Status messages for rule updates -->
+          <div id="rules-status"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Section to Display Analysis Results -->
+    <section class="results-section hidden" id="results-section">
+      <h2>
+        <i class="fas fa-star"></i> Recommendations
+      </h2>
+      <div id="recommendations-container">
+        <!-- Results will be dynamically populated here by JavaScript -->
+      </div>
+    </section>
+  </div>
+
+  <!-- External Libraries for File Parsing -->
+  <!-- PDF.js for parsing PDF files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Mammoth.js for parsing DOCX files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- Marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Config (injects GEMINI_API_KEY into window.GEMINI_API_KEY) -->
+  <!-- You can implement this however you like; see README for details. -->
+  <script src="config.js"></script>
+
+  <!-- Main Application JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
