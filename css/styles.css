@@ -410,20 +410,6 @@ textarea {
   }
 }
 
-/* Blinking ellipsis alternative */
-.typing-ellipsis {
-  display: inline-block;
-  font-weight: 600;
-  letter-spacing: 2px;
-  animation: typing-ellipsis-blink 1.2s infinite steps(1);
-}
-
-@keyframes typing-ellipsis-blink {
-  0%   { opacity: 0.2; }
-  50%  { opacity: 1; }
-  100% { opacity: 0.2; }
-}
-
 /* ===== Modal Background for Analyze CVs ===== */
 .modal {
   display: none;
