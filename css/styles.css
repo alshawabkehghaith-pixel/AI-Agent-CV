@@ -621,3 +621,112 @@ textarea {
   cursor: pointer;
 }
 
+/* ============================= */
+/* RESPONSIVE — GLOBAL FIXES     */
+/* ============================= */
+
+/* Avoid overflow on small screens */
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Make images & content scale correctly */
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Improve input responsiveness */
+.chat-input input {
+    min-width: 0;
+}
+
+/* ============================= */
+/* BREAKPOINT: TABLETS & BELOW   */
+/* ============================= */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .chat-section,
+    .side-panel {
+        width: 100%;
+    }
+
+    .chat-section {
+        height: auto;
+    }
+}
+
+/* ============================= */
+/* BREAKPOINT: MOBILE LAYOUT     */
+/* ============================= */
+@media (max-width: 768px) {
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .chat-section {
+        padding: 15px;
+    }
+
+    .panel-section {
+        padding: 15px;
+    }
+
+    .chat-messages {
+        max-height: 300px;
+    }
+
+    /* Chat input becomes more compact */
+    .chat-input {
+        gap: 6px;
+    }
+    #user-input {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    button {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================= */
+/* BREAKPOINT: SMALL MOBILE      */
+/* ============================= */
+@media (max-width: 480px) {
+
+    .chat-messages {
+        padding: 6px;
+    }
+
+    .message {
+        max-width: 95%;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    .cv-modal-content {
+        width: 92%;
+        margin: 40px auto;
+        padding: 15px;
+    }
+
+    .cv-tab {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+
+    .item-row input {
+        font-size: 0.85rem;
+    }
+}
+
