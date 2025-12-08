@@ -28,6 +28,7 @@ async function callGeminiProxy(payload) {
 const CHAT_HISTORY_KEY = "skillMatchChatHistory";
 const CERT_CATALOG_KEY = "skillMatchCertCatalog";
 const USER_RULES_KEY = "skillMatchUserRules";
+const LAST_RECOMMENDATIONS_KEY = "skillMatchLastRecommendations";
 
 // Default (built-in) certificate catalog.
 // This will be used the first time and then stored in localStorage.
@@ -389,6 +390,7 @@ const DEFAULT_RULES = [
 let chatHistory = [];               // [{ text: string, isUser: boolean }]
 let userRules = [...DEFAULT_RULES]; // [string]
 let uploadedCvs = [];               // [{ name: string, text: string }]
+let lastRecommendations = null;     // persisted recommendations for chat context
 
 // ============================================================================
 // 4) GENERIC HELPERS (UI, LocalStorage, Catalog)
@@ -499,6 +501,34 @@ function saveUserRules() {
   }
 }
 
+// Persist last recommendations to localStorage
+function saveLastRecommendations() {
+  try {
+    localStorage.setItem(
+      LAST_RECOMMENDATIONS_KEY,
+      JSON.stringify(lastRecommendations)
+    );
+  } catch (err) {
+    console.error("Failed to save last recommendations:", err);
+  }
+}
+
+// Load last recommendations from localStorage
+function loadLastRecommendations() {
+  const saved = localStorage.getItem(LAST_RECOMMENDATIONS_KEY);
+  if (!saved) return;
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === "object") {
+      lastRecommendations = parsed;
+    }
+  } catch (err) {
+    console.error("Failed to parse last recommendations:", err);
+    lastRecommendations = null;
+  }
+}
+
 // Load user rules from localStorage or fall back to defaults
 function loadUserRules() {
   const saved = localStorage.getItem(USER_RULES_KEY);
@@ -558,6 +588,26 @@ function loadCertificateCatalog() {
   return FINAL_CERTIFICATE_CATALOG;
 }
 
+// Build a short, readable summary of the last recommendations for chat grounding
+function summarizeRecommendationsForChat(recs) {
+  if (!recs || !Array.isArray(recs.candidates) || recs.candidates.length === 0) {
+    return "No recommendations generated yet.";
+  }
+
+  const lines = [];
+  recs.candidates.forEach((candidate) => {
+    lines.push(`Candidate: ${candidate.candidateName || "Candidate"}`);
+    (candidate.recommendations || []).forEach((rec) => {
+      lines.push(
+        `- ${rec.certName || "Certification"}${rec.certId ? ` [${rec.certId}]` : ""}: ${rec.reason || "Reason not provided"}`
+      );
+    });
+    lines.push(""); // spacing between candidates
+  });
+
+  return lines.join("\n").trim();
+}
+
 // Save a given catalog array to localStorage.
 function saveCertificateCatalog(catalogArray) {
   try {
@@ -575,6 +625,25 @@ function getCatalogAsPromptString() {
         `- **${c.name}** (${c.level || "N/A"}): ${c.description}${c.officialLink ? ` | Link: ${c.officialLink}` : ""}`
     )
     .join("\n");
+}
+
+// Build chat context string so the model knows the current rules and last recommendations
+function buildChatContextMessage(userMessage) {
+  const rulesText =
+    userRules && userRules.length > 0
+      ? userRules.map((r, i) => `${i + 1}. ${r}`).join("\n")
+      : "No explicit business rules provided.";
+
+  const recSummary = summarizeRecommendationsForChat(lastRecommendations);
+
+  return `${userMessage}
+
+[Context]
+Business rules:
+${rulesText}
+
+Latest recommendations:
+${recSummary}`;
 }
 
 // ============================================================================
@@ -980,6 +1049,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load the certificate catalog from localStorage or defaults
   certificateCatalog = loadCertificateCatalog();
   loadUserRules();
+  loadLastRecommendations();
 
   // DOM elements
   const userInput = document.getElementById("user-input");
@@ -1046,6 +1116,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         enhancedMessage = `${message}\n\n[Context: ${uploadedCvs.length} CV(s) available. Summary: ${cvSummary}]`;
       }
+
+      // Add business rules + last recommendations context for grounding
+      enhancedMessage = buildChatContextMessage(enhancedMessage);
       
       const reply = await callGeminiAPI(enhancedMessage, chatHistory, enhancedSystemPrompt);
       
@@ -1302,6 +1375,10 @@ document.getElementById("submitCvReview").addEventListener("click", () => {
 
       // 2) Continue with existing analysis
       const recommendations = await analyzeCvsWithAI(uploadedCvs, userRules);
+
+      // 2a) Persist recommendations for chat grounding
+      lastRecommendations = recommendations;
+      saveLastRecommendations();
 
       // 3) Render
       displayRecommendations(
