@@ -195,3 +195,25 @@ a:focus, button:focus, input:focus, textarea:focus { outline-offset: 3px; }
 /* small animation for recommendation cards */
 .recommendation-card { transition: transform 160ms ease, box-shadow 160ms ease; }
 .recommendation-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(12,12,12,0.06); }
+
+
+/* Fix unwanted horizontal scroll */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Prevent flex child expansion */
+.main-content > * {
+  min-width: 0;
+}
+
+/* Prevent text elements from pushing layout */
+.message,
+#chat-messages,
+.panel-section,
+.cv-tabs,
+.cv-results {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
