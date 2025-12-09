@@ -724,7 +724,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateStartRecommendingButton(uploadedCvs);
         // Ensure file input is cleared
         if (fileInput) fileInput.value = "";
-        updateStatus(uploadStatus, "Please upload a CV file first. No files are currently selected for analysis.", true);
+        updateStatus(uploadStatus, "Please upload a CV file first.", true);
         return;
       }
       
@@ -737,7 +737,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Same files as before - user needs to select new files
         uploadedCvs = [];
         updateStartRecommendingButton(uploadedCvs);
-        updateStatus(uploadStatus, "Please upload a CV file first. No files are currently selected for analysis.", true);
+        updateStatus(uploadStatus, "Please upload a CV file first.", true);
         return;
       }
 
@@ -1034,4 +1034,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
+
 
