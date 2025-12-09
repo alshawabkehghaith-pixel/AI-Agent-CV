@@ -2,6 +2,10 @@
 // API wrapper, prompts application, parsing, recommendation engine, and chat rendering helpers.
 
 import {
+  GEMINI_PROXY_URL,
+} from "./constants.js";
+
+import {
   certificateCatalog,
   getCatalogAsPromptString,
   summarizeRecommendationsForChat,
@@ -17,26 +21,10 @@ import {
 } from "./prompts.js";
 
 // ---------------------------------------------------------------------------
-// Proxy + Gemini call
+// Proxy + Gemini call - INTEGRATED: Your proxy function
 // ---------------------------------------------------------------------------
-const DEFAULT_PROXY_URL =
-  "https://backend-vercel-repo-git-main-jouds-projects-8f56041e.vercel.app/api/gemini-proxy";
-
-function getProxyUrl() {
-  return (
-    window.GEMINI_PROXY_URL ||
-    window.GEMINI_PROXY_URL_OVERRIDE ||
-    DEFAULT_PROXY_URL
-  );
-}
-
 export async function callGeminiProxy(payload) {
-  const proxyUrl = getProxyUrl();
-  if (!proxyUrl) {
-    throw new Error("Gemini proxy URL is not configured (window.GEMINI_PROXY_URL).");
-  }
-
-  const response = await fetch(proxyUrl, {
+  const response = await fetch(GEMINI_PROXY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -175,6 +163,13 @@ ${recSummary}`;
 // ---------------------------------------------------------------------------
 // CV parsing helpers (PDF, DOCX, TXT)
 // ---------------------------------------------------------------------------
+
+// Configure PDF.js worker
+if (window.pdfjsLib) {
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
 async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -436,4 +431,3 @@ export function displayRecommendations(recommendations, containerEl, resultsSect
 
 // Re-export utility used in UI for CV summary
 export { calculateTotalExperience };
-
