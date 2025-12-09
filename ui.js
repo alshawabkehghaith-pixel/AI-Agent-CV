@@ -973,6 +973,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       submittedCvData = upsertByName(submittedCvData, allResults);
       renderSubmittedCvBubbles(submittedCvData);
 
+      // Clear file input so user must select new files for next analysis
+      if (fileInput) {
+        fileInput.value = "";
+      }
+      // Clear uploadedCvs so it doesn't process old data
+      uploadedCvs = [];
+      updateStartRecommendingButton(uploadedCvs);
+
       // INTEGRATED: Close modal
       const modal = document.getElementById("cvModal");
       if (modal) {
