@@ -1,5 +1,9 @@
 // ui.js
-// Entry point: wires DOM events and coordinates modules.
+// Entry point: wires DOM events, dynamic rules UI, and coordinates modules.
+
+import {
+  DEFAULT_RULES,
+} from "./constants.js";
 
 import {
   saveChatHistory,
@@ -26,6 +30,92 @@ import {
   displayRecommendations,
   callGeminiAPI,
 } from "./ai.js";
+
+// ===========================================================================
+// INTEGRATED: Dynamic Business Rules UI Functions (from your code)
+// ===========================================================================
+
+/**
+ * Create a single rule input field with delete button
+ */
+function createRuleInput(ruleText = "") {
+  const wrapper = document.createElement("div");
+  wrapper.className = "rule-input-wrapper";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "Enter a business rule...";
+  input.value = ruleText;
+  input.className = "rule-input";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "delete-rule-btn";
+  deleteBtn.innerHTML = "×";
+  deleteBtn.title = "Delete this rule";
+  
+  deleteBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    // Allow deleting all rules (no minimum check)
+    wrapper.remove();
+  });
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(deleteBtn);
+  return wrapper;
+}
+
+/**
+ * Initialize the rules container with default or saved rules
+ */
+function initializeRulesUI(rules) {
+  const container = document.getElementById("rules-container");
+  if (!container) return;
+
+  // Clear existing content except status overlay
+  const statusOverlay = container.querySelector("#rules-status");
+  container.innerHTML = "";
+  if (statusOverlay) {
+    container.appendChild(statusOverlay);
+  }
+
+  if (rules && rules.length > 0) {
+    rules.forEach((rule) => {
+      container.appendChild(createRuleInput(rule));
+    });
+  } else {
+    // Start with one empty input
+    container.appendChild(createRuleInput());
+  }
+}
+
+/**
+ * Get all rules from the UI inputs
+ */
+function getRulesFromUI() {
+  const container = document.getElementById("rules-container");
+  if (!container) return [];
+
+  const inputs = container.querySelectorAll(".rule-input");
+  const rules = [];
+  inputs.forEach((input) => {
+    const value = input.value.trim();
+    if (value) {
+      rules.push(value);
+    }
+  });
+  return rules;
+}
+
+/**
+ * Enable/disable Start Recommending button based on CV upload status
+ */
+function updateStartRecommendingButton(uploadedCvs) {
+  const startBtn = document.getElementById("start-recommending-btn");
+  if (startBtn) {
+    startBtn.disabled = uploadedCvs.length === 0;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -346,7 +436,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Load catalog (async - loads from JSON file)
   await loadCertificateCatalog();
 
-  // DOM
+  // DOM elements
   const userInput = document.getElementById("user-input");
   const sendButton = document.getElementById("send-button");
 
@@ -354,14 +444,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const analyzeButton = document.getElementById("analyze-button");
   const cvUploadArea = document.getElementById("cv-upload-area");
 
-  const rulesInput = document.getElementById("rules-input");
-  const updateRulesButton = document.getElementById("update-rules");
-
   const uploadStatus = document.getElementById("upload-status");
   const rulesStatus = document.getElementById("rules-status");
 
   const resultsSection = document.getElementById("results-section");
   const recommendationsContainer = document.getElementById("recommendations-container");
+
+  // INTEGRATED: Dynamic Rules UI elements
+  const addRuleBtn = document.getElementById("add-rule-btn");
+  const admitRulesBtn = document.getElementById("admit-rules-btn");
+  const startRecommendingBtn = document.getElementById("start-recommending-btn");
+
+  // INTEGRATED: Initialize rules UI with default rules
+  initializeRulesUI(DEFAULT_RULES);
+  userRules = [...DEFAULT_RULES];
 
   // Clear chat history in UI but keep stored messages if desired
   clearChatHistoryDom();
@@ -510,13 +606,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Extract and parse
         for (const file of files) {
           const rawText = await extractTextFromFile(file);
+          console.log(`--- DEBUG: Extracted text from ${file.name} ---`);
+          console.log(rawText);
+
+          showLoading(uploadStatus, `Parsing ${file.name} into sections...`);
           const structuredSections = await parseCvIntoStructuredSections(rawText);
+          
+          console.log(`--- DEBUG: Parsed sections for ${file.name} ---`);
+          console.log(structuredSections);
+
           uploadedCvs.push({
             name: file.name,
             text: rawText,
             structured: structuredSections,
           });
         }
+
+        console.log("--- All parsed CVs ready for frontend ---");
+        console.log(uploadedCvs);
+
+        // INTEGRATED: Enable Start Recommending button
+        updateStartRecommendingButton(uploadedCvs);
 
         showLoading(uploadStatus, "Analyzing CVs with AI...");
 
@@ -586,23 +696,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Rules update
-  if (updateRulesButton) {
-    updateRulesButton.addEventListener("click", async () => {
-      const rulesText = (rulesInput?.value || "").trim();
-      if (!rulesText) {
+  // ===========================================================================
+  // INTEGRATED: Dynamic Business Rules UI Event Handlers
+  // ===========================================================================
+
+  // Add Rule button - Creates new empty input field
+  if (addRuleBtn) {
+    addRuleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const container = document.getElementById("rules-container");
+      if (container) {
+        const newInput = createRuleInput();
+        // Insert before status overlay if it exists
+        const statusOverlay = container.querySelector("#rules-status");
+        if (statusOverlay) {
+          container.insertBefore(newInput, statusOverlay);
+        } else {
+          container.appendChild(newInput);
+        }
+        // Focus on the new input
+        const input = newInput.querySelector('input');
+        if (input) input.focus();
+      }
+    });
+  }
+
+  // Admit Rules button - Saves and parses rules
+  if (admitRulesBtn) {
+    admitRulesBtn.addEventListener("click", async () => {
+      const rules = getRulesFromUI();
+      
+      // Allow empty rules (user deleted all)
+      if (rules.length === 0) {
+        userRules = [];
+        saveUserRules(userRules);
         updateStatus(
           rulesStatus,
-          "Please enter some rules before updating.",
-          true
+          "All rules cleared. AI will use its own reasoning for recommendations."
+        );
+        addMessage(
+          "I've cleared all business rules. I'll now use my own judgment when making recommendations.",
+          false
         );
         return;
       }
 
       showLoading(rulesStatus, "Parsing rules with AI...");
-      updateRulesButton.disabled = true;
+      admitRulesBtn.disabled = true;
 
       try {
+        // Convert rules array to text for AI parsing
+        const rulesText = rules.join("\n");
         const parsedRules = await parseAndApplyRules(rulesText);
         userRules = parsedRules;
         saveUserRules(userRules);
@@ -623,7 +767,75 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       } finally {
         hideLoading(rulesStatus);
-        updateRulesButton.disabled = false;
+        admitRulesBtn.disabled = false;
+      }
+    });
+  }
+
+  // Start Recommending button - Generates recommendations
+  if (startRecommendingBtn) {
+    startRecommendingBtn.addEventListener("click", async () => {
+      // Check if CVs are uploaded
+      if (uploadedCvs.length === 0) {
+        updateStatus(
+          rulesStatus,
+          "Please upload and analyze CVs first.",
+          true
+        );
+        return;
+      }
+
+      // Get current rules from UI (always use fresh UI state)
+      const rules = getRulesFromUI();
+
+      showLoading(rulesStatus, "Generating recommendations...");
+      startRecommendingBtn.disabled = true;
+
+      try {
+        // ALWAYS update userRules based on current UI state
+        if (rules.length > 0) {
+          // If there are rules, parse them
+          const rulesText = rules.join("\n");
+          userRules = await parseAndApplyRules(rulesText);
+          saveUserRules(userRules);
+        } else {
+          // If user deleted all rules, use empty array (AI will use its own reasoning)
+          userRules = [];
+          saveUserRules(userRules);
+          console.log("📝 No rules provided - AI will use its own reasoning");
+        }
+
+        // Generate recommendations with current rules (empty array if no rules)
+        const recommendations = await analyzeCvsWithAI(uploadedCvs, userRules);
+
+        // Persist recommendations for chat grounding
+        lastRecommendations = recommendations;
+        saveLastRecommendations(recommendations);
+
+        // Display recommendations
+        displayRecommendations(
+          recommendations,
+          recommendationsContainer,
+          resultsSection
+        );
+
+        updateStatus(rulesStatus, "Recommendations generated successfully!");
+        setTimeout(() => {
+  if (resultsSection) {
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    console.log('✅ Scrolled to recommendations section');
+  }
+}, 300);
+      } catch (err) {
+        console.error("Recommendation Error:", err);
+        updateStatus(
+          rulesStatus,
+          `Failed to generate recommendations. Error: ${err.message}`,
+          true
+        );
+      } finally {
+        hideLoading(rulesStatus);
+        startRecommendingBtn.disabled = uploadedCvs.length === 0;
       }
     });
   }
@@ -641,7 +853,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (modal && e.target === modal) modal.style.display = "none";
   });
 
-  // Submit CV review (logs only)
+  // ===========================================================================
+  // INTEGRATED: Submit CV review (with modal close and scroll)
+  // ===========================================================================
   const submitCvReview = document.getElementById("submitCvReview");
   if (submitCvReview) {
     submitCvReview.addEventListener("click", () => {
@@ -685,7 +899,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       console.log("FINAL SUBMITTED CV DATA →", allResults);
-      alert("Submitted! Check console for full JSON output.");
+
+      // INTEGRATED: Close modal
+      const modal = document.getElementById("cvModal");
+      if (modal) {
+        modal.style.display = "none";
+        console.log('✅ Modal closed');
+      }
+
+      // INTEGRATED: Show results section
+      const results = document.getElementById('results-section');
+      if (results) {
+        results.style.display = 'block';
+        results.classList.remove('hidden');
+        console.log('✅ Results shown');
+      }
+
+      // INTEGRATED: Scroll to recommendations
+      setTimeout(() => {
+        if (results) {
+          results.scrollIntoView({ behavior: 'smooth' });
+          console.log('✅ Scrolled');
+        }
+      }, 300);
     });
   }
 });
