@@ -200,6 +200,73 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   margin-top: 0;
 }
 
+.submitted-cv-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: var(--space-s);
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.cv-summary-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 18px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  position: relative;
+}
+
+.cv-summary-bubble .bubble-name {
+  font-weight: 600;
+}
+
+.cv-summary-bubble .bubble-meta {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.cv-summary-bubble:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+.cv-summary-bubble:active {
+  transform: translateY(0);
+}
+
+.cv-summary-bubble .delete-bubble-btn {
+  border: none;
+  background: transparent !important;
+  box-shadow: none;
+  color: rgb(72, 72, 72);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  min-width: 0;
+  height: auto;
+  appearance: none;
+}
+
+.cv-summary-bubble .delete-bubble-btn:hover {
+  color: #9a0000;
+  background: transparent !important;
+}
+
+
 /* === RULES SECTION - INTEGRATED (Tall with dynamic UI and overlay status) === */
 .rules-section {
   flex: 1 1 auto;
