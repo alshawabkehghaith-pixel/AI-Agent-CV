@@ -66,22 +66,41 @@
 
       <!-- Side panel -->
       <aside class="side-panel">
+        <!-- Upload CVs Section - INTEGRATED VERSION -->
         <section class="panel-section card upload-section">
           <h3><i class="fas fa-file-upload"></i> Upload CVs</h3>
           <div id="cv-upload-area" class="file-upload-area" tabindex="0">
             <i class="fas fa-cloud-upload-alt fa-2x"></i>
             <p class="muted">Drag & drop CV files here or click to browse</p>
             <input id="file-input" type="file" multiple accept=".pdf,.docx,.txt" />
+            <!-- Status overlay inside upload area -->
+            <div id="upload-status"></div>
           </div>
           <button id="analyze-button" class="primary action-full"><i class="fas fa-brain"></i> Analyze CVs</button>
-          <div id="upload-status" class="status-area"></div>
         </section>
     
+        <!-- Business Rules Section - INTEGRATED VERSION (Your Dynamic UI) -->
         <section class="panel-section card rules-section">
           <h3><i class="fas fa-gavel"></i> Business Rules</h3>
-          <textarea id="rules-input" placeholder="Add your business rules here, one per line."></textarea>
-          <button id="update-rules" class="primary action-full"><i class="fas fa-sync-alt"></i> Update Rules</button>
-          <div id="rules-status" class="status-area"></div>
+          <!-- Dynamic rules container with status overlay -->
+          <div id="rules-container" class="rules-container">
+            <!-- Rules inputs will be dynamically added here -->
+            <!-- Status overlay inside rules container -->
+            <div id="rules-status"></div>
+          </div>
+          <!-- Add Rule button -->
+          <button id="add-rule-btn" type="button" class="add-rule-btn">
+            <i class="fas fa-plus"></i> Add
+          </button>
+          <!-- Action buttons -->
+          <div class="rules-actions">
+            <button id="admit-rules-btn" class="primary action-half">
+              <i class="fas fa-check"></i> Save Rules
+            </button>
+            <button id="start-recommending-btn" class="primary action-half" disabled>
+              <i class="fas fa-star"></i> Generate recommendations
+            </button>
+          </div>
         </section>
       </aside>
     </div>
@@ -105,6 +124,7 @@
       </h2>
       <div id="recommendations-container">
         <!-- Results will be dynamically populated here by JavaScript -->
+      </div>
     </section>
   </main>
 
@@ -121,7 +141,7 @@
   <!-- You can implement this however you like; see README for details. -->
   <script src="config.js"></script>
 
-  <!-- Main Application JavaScript -->
+  <!-- Main Application JavaScript - Team's modular structure -->
   <script type="module" src="constants.js"></script>
   <script type="module" src="prompts.js"></script>
   <script type="module" src="storage-catalog.js"></script>
@@ -129,4 +149,3 @@
   <script type="module" src="ui.js"></script>
 </body>
 </html>
-
