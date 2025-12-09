@@ -52,4 +52,3 @@ export async function loadCertificates() {
 export function getCertificatesDatabase() {
   return CERTIFICATES_DATABASE || [];
 }
-
