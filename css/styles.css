@@ -242,14 +242,14 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 
 .item-row { 
   background: #fff; 
-  padding: 8px; 
+  padding: 6px 4px; 
   border-radius: 6px; 
   border: var(--border); 
-  margin-bottom: 8px; 
+  margin-bottom: 6px; 
   position: relative; 
   display: flex; 
   flex-wrap: wrap; 
-  gap: 8px; 
+  gap: 4px; 
   align-items: flex-start; 
 }
 
@@ -257,8 +257,9 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 .item-row textarea {
   flex: 1 1 auto;
   min-width: 120px;
-  padding: 6px 8px;
-  border: 1px solid rgba(0,0,0,0.1);
+  padding: 6px 6px;
+  border: 1px solid transparent;
+  background: transparent;
   border-radius: 4px;
   font-size: 0.9rem;
   font-family: inherit;
@@ -267,6 +268,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 .item-row textarea {
   min-height: 60px;
   resize: vertical;
+  overflow: hidden;
 }
 
 .cv-field-job-title {
@@ -275,7 +277,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 }
 
 .cv-field-company {
-  color: var(--muted);
+  color: #2d5a67;
 }
 
 .cv-description-textarea {
@@ -293,19 +295,20 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
   position: absolute; 
   right: 8px; 
   top: 8px; 
-  color: #c00; 
+  color: rgb(72, 72, 72); 
   font-weight: 700; 
   cursor: pointer; 
   font-size: 18px;
   line-height: 1;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(204, 0, 0, 0.08);
-  transition: background 0.2s;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  transition: color 0.2s;
 }
 
 .delete-item-btn:hover {
-  background: rgba(204, 0, 0, 0.15);
+  background: transparent;
+  color: #9a0000;
 }
 
 /* Skills bubble list */
@@ -408,7 +411,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 .cv-section-experience .item-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cv-section-experience .item-row .cv-field-job-title {
