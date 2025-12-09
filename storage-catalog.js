@@ -235,4 +235,3 @@ export function calculateTotalExperience(experienceArray) {
   });
   return Math.round(totalYears * 10) / 10;
 }
-
