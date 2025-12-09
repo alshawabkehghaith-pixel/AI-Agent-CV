@@ -714,7 +714,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // No new files selected – do not reuse previous uploads
         uploadedCvs = [];
         updateStartRecommendingButton(uploadedCvs);
-        updateStatus(uploadStatus, "Please upload at least one CV file first.", true);
+        updateStatus(uploadStatus, "Please upload a CV file first. No files are currently selected for analysis.", true);
         return;
       }
 
