@@ -75,7 +75,6 @@
           </div>
           <button id="analyze-button" class="primary action-full"><i class="fas fa-brain"></i> Analyze CVs</button>
           <div id="upload-status" class="status-area"></div>
-          <div id="submitted-cv-list" class="submitted-cv-list hidden"></div>
         </section>
     
         <section class="panel-section card rules-section">
@@ -95,7 +94,7 @@
     
         <div id="cvTabsContainer" class="cv-tabs" role="tablist"></div>
         <div id="cvResultsContainer" class="cv-results" role="region"></div>
-        <button id="cvSubmitAll" class="cv-submit-btn">Submit</button>
+        <button id="submitCvReview" class="cv-submit-btn">Submit</button>
       </div>
     </div>
 
@@ -104,7 +103,6 @@
       <h2>
         <i class="fas fa-star"></i> Recommendations
       </h2>
-      <div id="recommendation-status" class="status-area"></div>
       <div id="recommendations-container">
         <!-- Results will be dynamically populated here by JavaScript -->
     </section>
@@ -131,5 +129,4 @@
   <script type="module" src="ui.js"></script>
 </body>
 </html>
-
 
