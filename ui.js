@@ -63,6 +63,16 @@ function clearChatHistoryDom() {
   }
 }
 
+function updateRecommendationsStatus(message, isError = false) {
+  const statusEl = document.getElementById("recommendation-status");
+  if (!statusEl) return;
+  statusEl.innerHTML = `
+    <div class="status-message ${isError ? "status-error" : "status-success"}">
+      ${message}
+    </div>
+  `;
+}
+
 // ---------------------------------------------------------------------------
 // Modal helpers (CV review)
 // ---------------------------------------------------------------------------
@@ -302,10 +312,11 @@ function renderCvDetails(cv) {
   });
 }
 
-function openCvModal(allCvResults) {
+function openCvModal(allCvResults, currentIndex = 0) {
   const modal = document.getElementById("cvModal");
   const tabs = document.getElementById("cvTabsContainer");
   const content = document.getElementById("cvResultsContainer");
+  const submitBtn = document.getElementById("cvSubmitAll");
   if (!modal || !tabs || !content) return;
 
   // Center the modal using flex; matches CSS that expects flex display
@@ -313,25 +324,155 @@ function openCvModal(allCvResults) {
   tabs.innerHTML = "";
   content.innerHTML = "";
 
+  if (submitBtn) {
+    submitBtn.textContent = allCvResults.length > 1 ? "Submit all CVs" : "Submit CV";
+  }
+
   allCvResults.forEach((cv, index) => {
     const tab = document.createElement("div");
     tab.className = "cv-tab";
     tab.textContent = cv.name;
     tab.dataset.index = index;
-    if (index === 0) tab.classList.add("active");
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", index === currentIndex ? "true" : "false");
+    if (index === currentIndex) tab.classList.add("active");
 
     tab.addEventListener("click", () => {
-      document
-        .querySelectorAll(".cv-tab")
-        .forEach((t) => t.classList.remove("active"));
+      // Save any edits from the currently visible CV before switching
+      const updated = collectCvResultsFromForm();
+      if (updated.length === allCvResults.length) {
+        cvResultsForModal = updated;
+        allCvResults = updated;
+      }
+
+      currentCvIndex = index;
+      document.querySelectorAll(".cv-tab").forEach((t) => {
+        t.classList.remove("active");
+        t.setAttribute("aria-selected", "false");
+      });
       tab.classList.add("active");
+      tab.setAttribute("aria-selected", "true");
       renderCvDetails(allCvResults[index]);
     });
 
     tabs.appendChild(tab);
   });
 
-  renderCvDetails(allCvResults[0]);
+  renderCvDetails(allCvResults[currentIndex]);
+}
+
+function activateCvTab(index, allCvResults) {
+  const tabs = document.querySelectorAll(".cv-tab");
+  tabs.forEach((t) => t.classList.remove("active"));
+  const tab = tabs[index];
+  if (tab) tab.classList.add("active");
+  renderCvDetails(allCvResults[index]);
+}
+
+function collectCvResultsFromForm() {
+  const tabs = document.querySelectorAll(".cv-tab");
+  const allResults = [];
+
+  tabs.forEach((tab) => {
+    const name = tab.textContent;
+    const result = {
+      name,
+      experience: [],
+      education: [],
+      certifications: [],
+      skills: [],
+    };
+
+    ["experience", "education", "certifications", "skills"].forEach((sec) => {
+      const list = document.getElementById(`${name}_${sec}_list`);
+      if (!list) return;
+
+      if (sec === "skills") {
+        list.querySelectorAll(".skill-bubble").forEach((bubble) => {
+          const input = bubble.querySelector("input");
+          if (input) {
+            result.skills.push({ title: input.value });
+          }
+        });
+      } else {
+        list.querySelectorAll(".item-row").forEach((row) => {
+          const entry = {};
+          row.querySelectorAll("input, textarea").forEach((input) => {
+            const key = input.dataset.field || input.placeholder.toLowerCase();
+            entry[key] = input.value;
+          });
+          result[sec].push(entry);
+        });
+      }
+    });
+
+    allResults.push(result);
+  });
+
+  return allResults;
+}
+
+function buildCvTextFromResult(result) {
+  const expText = (result.experience || [])
+    .map((exp) => {
+      const lines = [];
+      if (exp.jobTitle || exp.company) {
+        lines.push(`${exp.jobTitle || "Role"} at ${exp.company || ""}`.trim());
+      }
+      if (exp.years) lines.push(`${exp.years}`);
+      if (exp.description) lines.push(exp.description);
+      return lines.filter(Boolean).join("\n");
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
+  const eduText = (result.education || [])
+    .map((edu) => {
+      const lines = [];
+      if (edu.degreeField) lines.push(edu.degreeField);
+      if (edu.school) lines.push(edu.school);
+      return lines.filter(Boolean).join("\n");
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
+  const certText = (result.certifications || [])
+    .map((c) => c.title)
+    .filter(Boolean)
+    .join("\n");
+
+  const skillsText = (result.skills || [])
+    .map((s) => (typeof s === "string" ? s : s.title))
+    .filter(Boolean)
+    .join(", ");
+
+  const parts = [];
+  if (expText) parts.push(`Experience:\n${expText}`);
+  if (eduText) parts.push(`Education:\n${eduText}`);
+  if (certText) parts.push(`Certifications:\n${certText}`);
+  if (skillsText) parts.push(`Skills:\n${skillsText}`);
+
+  return parts.join("\n\n");
+}
+
+async function submitRecommendationsFromResults(results, userRules) {
+  const recommendationsContainer = document.getElementById("recommendations-container");
+  const resultsSection = document.getElementById("results-section");
+  if (!recommendationsContainer || !resultsSection) return;
+
+  updateRecommendationsStatus("Generating recommendations...", false);
+
+  const cvPayload = results.map((cv) => ({
+    name: cv.name,
+    text: buildCvTextFromResult(cv),
+    structured: cv,
+  }));
+
+  const recommendations = await analyzeCvsWithAI(cvPayload, userRules);
+
+  displayRecommendations(recommendations, recommendationsContainer, resultsSection);
+  updateRecommendationsStatus("Recommendations generated.", false);
+  return { recommendations, cvPayload };
 }
 
 // ---------------------------------------------------------------------------
@@ -341,6 +482,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   let chatHistory = [];
   let userRules = loadUserRules();
   let uploadedCvs = [];
+  let cvResultsForModal = [];
+  let savedCvDrafts = [];
+  let currentCvIndex = 0;
   let lastRecommendations = loadLastRecommendations();
 
   // Load catalog (async - loads from JSON file)
@@ -353,6 +497,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fileInput = document.getElementById("file-input");
   const analyzeButton = document.getElementById("analyze-button");
   const cvUploadArea = document.getElementById("cv-upload-area");
+  const submittedCvList = document.getElementById("submitted-cv-list");
 
   const rulesInput = document.getElementById("rules-input");
   const updateRulesButton = document.getElementById("update-rules");
@@ -362,6 +507,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const resultsSection = document.getElementById("results-section");
   const recommendationsContainer = document.getElementById("recommendations-container");
+  const cvSubmitAll = document.getElementById("cvSubmitAll");
+
+  const renderSubmittedCvList = (list) => {
+    if (!submittedCvList) return;
+    submittedCvList.innerHTML = "";
+    if (!list || list.length === 0) {
+      submittedCvList.classList.add("hidden");
+      return;
+    }
+    submittedCvList.classList.remove("hidden");
+    list.forEach((cv, idx) => {
+      const chip = document.createElement("div");
+      chip.className = "submitted-cv-chip";
+      chip.textContent = cv.name || `CV ${idx + 1}`;
+      chip.addEventListener("click", () => {
+        if (!savedCvDrafts.length) return;
+        cvResultsForModal = [...savedCvDrafts];
+        currentCvIndex = idx;
+        openCvModal(cvResultsForModal, idx);
+      });
+      submittedCvList.appendChild(chip);
+    });
+  };
 
   // Clear chat history in UI but keep stored messages if desired
   clearChatHistoryDom();
@@ -505,6 +673,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       showLoading(uploadStatus, "Extracting text from CVs...");
       analyzeButton.disabled = true;
       uploadedCvs = [];
+      cvResultsForModal = [];
+      currentCvIndex = 0;
 
       try {
         // Extract and parse
@@ -518,23 +688,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
         }
 
-        showLoading(uploadStatus, "Analyzing CVs with AI...");
-
-        const recommendations = await analyzeCvsWithAI(uploadedCvs, userRules);
-
-        // Persist for chat grounding
-        lastRecommendations = recommendations;
-        saveLastRecommendations(recommendations);
-
-        // Render
-        displayRecommendations(
-          recommendations,
-          recommendationsContainer,
-          resultsSection
-        );
-
         // Transform uploadedCvs to the format expected by the modal (rich view)
-        const cvResultsForModal = uploadedCvs.map((cv) => {
+        cvResultsForModal = uploadedCvs.map((cv) => {
           const s = cv.structured || {};
           const totalYearsExperience = calculateTotalExperience(s.experience || []);
           return {
@@ -571,7 +726,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         openCvModal(cvResultsForModal);
-        updateStatus(uploadStatus, `Analysis complete for ${files.length} CV(s).`);
+        updateStatus(
+          uploadStatus,
+          `Loaded ${files.length} CV(s). Review and submit to save them.`
+        );
       } catch (err) {
         console.error("Analysis Error:", err);
         updateStatus(
@@ -641,51 +799,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (modal && e.target === modal) modal.style.display = "none";
   });
 
-  // Submit CV review (logs only)
-  const submitCvReview = document.getElementById("submitCvReview");
-  if (submitCvReview) {
-    submitCvReview.addEventListener("click", () => {
-      const tabs = document.querySelectorAll(".cv-tab");
-      let allResults = [];
+  const modalEl = document.getElementById("cvModal");
 
-      tabs.forEach((tab) => {
-        const name = tab.textContent;
-        const result = {
-          name,
-          experience: [],
-          education: [],
-          certifications: [],
-          skills: [],
-        };
+  async function handleSubmit(targetResults) {
+    try {
+      // Preserve latest edits before saving
+      savedCvDrafts = targetResults;
+      cvResultsForModal = targetResults;
 
-        ["experience", "education", "certifications", "skills"].forEach((sec) => {
-          const list = document.getElementById(`${name}_${sec}_list`);
-          if (!list) return;
+      // Store for chat context; no recommendations generation here
+      uploadedCvs = targetResults.map((cv) => ({
+        name: cv.name,
+        text: buildCvTextFromResult(cv),
+        structured: cv,
+      }));
 
-          if (sec === "skills") {
-            list.querySelectorAll(".skill-bubble").forEach((bubble) => {
-              const input = bubble.querySelector("input");
-              if (input) {
-                result.skills.push({ title: input.value });
-              }
-            });
-          } else {
-            list.querySelectorAll(".item-row").forEach((row) => {
-              const entry = {};
-              row.querySelectorAll("input, textarea").forEach((input) => {
-                const key = input.dataset.field || input.placeholder.toLowerCase();
-                entry[key] = input.value;
-              });
-              result[sec].push(entry);
-            });
-          }
-        });
+      renderSubmittedCvList(savedCvDrafts);
+      updateStatus(uploadStatus, `Saved ${targetResults.length} CV(s).`, false);
 
-        allResults.push(result);
-      });
+      if (modalEl) modalEl.style.display = "none";
+    } catch (err) {
+      console.error("Submission Error:", err);
+      updateStatus(uploadStatus, `Failed to save CVs: ${err.message}`, true);
+    }
+  }
 
-      console.log("FINAL SUBMITTED CV DATA →", allResults);
-      alert("Submitted! Check console for full JSON output.");
+  if (cvSubmitAll) {
+    cvSubmitAll.addEventListener("click", async () => {
+      const allResults = collectCvResultsFromForm();
+      if (!allResults.length) return;
+      await handleSubmit(allResults);
     });
   }
 });
