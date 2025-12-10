@@ -60,7 +60,7 @@ img,video{ max-width:100%; height:auto; display:block; }
   align-items:center; 
   gap:var(--space-m); 
   padding: var(--space-s) 0; 
-  justify-content: space-between; /* keep button aligned right on all locales */
+  justify-content: space-between; 
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
@@ -71,8 +71,8 @@ img,video{ max-width:100%; height:auto; display:block; }
 .brand h1 { 
   margin: 0; 
   font-size: 1.25rem; 
-  font-weight: 700; /* ensure bold in both English and Arabic */
-  font-family: 'Roboto', sans-serif; /* force same font across locales */
+  font-weight: 700; 
+  font-family: 'Roboto', sans-serif; 
   line-height: 1.2; 
 }
 .tagline { 
@@ -93,7 +93,7 @@ img,video{ max-width:100%; height:auto; display:block; }
 /* MAIN LAYOUT - mobile-first */
 .main-content { display:flex; flex-direction: column; gap: var(--space-l); margin-top: var(--space-l); }
 
-/* === CHAT SECTION - INTEGRATED (Fixed height for alignment) === */
+/* === CHAT SECTION === */
 .chat-section { 
   display:flex; 
   flex-direction:column; 
@@ -159,7 +159,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
 /* primary full-width for panel actions */
 .action-full { width: 100%; border-radius: 10px; padding: 12px; }
 
-/* === SIDE PANEL - INTEGRATED (Fixed height for alignment) === */
+/* === SIDE PANEL === */
 .side-panel { 
   display:flex; 
   flex-direction: column; 
@@ -167,18 +167,50 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   height: 600px;
 }
 
-/* === UPLOAD SECTION - INTEGRATED (Compact with overlay status) === */
-.upload-section {
-  flex: 0 0 auto;
-  height: 230px;
+/* === MERGED SECTION (Upload CVs & Business Rules) === */
+.merged-section {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
 }
 
-.upload-section .section-header {
-  margin-bottom: var(--space-s);
+.merged-section h3 {
+  margin: 0 0 var(--space-m) 0;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
 }
+
+/* Rules label with optional tag */
+.rules-label {
+  margin: 0 0 var(--space-s) 0 !important;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.optional-tag {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+  background: rgba(126, 145, 150, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  /* margin-left: auto; */
+}
+
+/* Arabic - move optional tag to right */
+/* html[lang="ar"] .optional-tag {
+  margin-left: 0;
+  margin-right: auto;
+} */
 
 /* upload area */
 .file-upload-area {
@@ -188,12 +220,13 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   text-align:center;
   cursor:pointer;
   background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent);
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 0;
+  min-height: 120px;
+  max-height: 120px;
   margin-bottom: var(--space-s);
   position: relative;
 }
@@ -203,7 +236,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
 /* hide real file input visually but keep accessible */
 #file-input { position: absolute; opacity: 0; pointer-events: none; }
 
-/* Upload status overlay - INTEGRATED */
+/* Upload status overlay */
 #upload-status {
   position: absolute;
   top: 0;
@@ -223,17 +256,14 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   display: none;
 }
 
-.upload-section .action-full {
-  margin-top: 0;
-}
-
 .submitted-cv-bubbles {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: var(--space-s);
+  margin-bottom: var(--space-s);
   max-height: 80px;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .cv-summary-bubble {
@@ -293,25 +323,15 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   background: transparent !important;
 }
 
-
-/* === RULES SECTION - INTEGRATED (Tall with dynamic UI and overlay status) === */
-.rules-section {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
+/* === SECTION DIVIDER === */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+  margin: var(--space-m) 0;
+  flex-shrink: 0;
 }
 
-.rules-section .section-header {
-  margin-bottom: var(--space-s);
-}
-
-/* textareas (kept for compatibility) */
-textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--radius-sm); border: var(--border); resize: vertical; font-family: inherit; font-size: 1rem; }
-
-/* Rules container - INTEGRATED (Scrollable with overlay) */
+/* === RULES CONTAINER === */
 .rules-container {
   display: flex;
   flex-direction: column;
@@ -335,7 +355,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 .rules-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
 .rules-container::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
-/* Rules status overlay - INTEGRATED */
+/* Rules status overlay */
 #rules-status {
   position: absolute;
   top: 0;
@@ -355,7 +375,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
   display: none;
 }
 
-/* Rule input wrapper - INTEGRATED (Dynamic rule inputs) */
+/* Rule input wrapper */
 .rule-input-wrapper {
   display: flex;
   align-items: center;
@@ -387,7 +407,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
   color: #9CA3AF;
 }
 
-/* Delete rule button - INTEGRATED */
+/* Delete rule button */
 .delete-rule-btn {
   background: transparent;
   border: none;
@@ -409,7 +429,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
   background: rgba(204,15,51,0.1);
 }
 
-/* Add rule button - INTEGRATED */
+/* Add rule button */
 .add-rule-btn {
   width: 100%;
   background: white;
@@ -435,47 +455,24 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
   transform: translateY(-1px);
 }
 
-/* Rules action buttons - INTEGRATED */
-.rules-actions {
-  display: flex;
-  gap: var(--space-xs);
-  flex-shrink: 0;
-}
-
-.action-half {
-  flex: 1;
-  border-radius: 10px;
-  padding: 12px 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-#admit-rules-btn {
-  background: var(--primary);
-}
-
-#admit-rules-btn:hover {
-  background: var(--primary-600);
-  transform: translateY(-1px);
-}
-
-#start-recommending-btn:disabled {
+/* Generate Recommendations button */
+#generate-recommendations-btn:disabled {
   background: #D1D5DB;
   color: #9CA3AF;
   opacity: 1;
   cursor: not-allowed;
 }
 
-#start-recommending-btn:not(:disabled) {
+#generate-recommendations-btn:not(:disabled) {
   background: var(--primary);
 }
 
-#start-recommending-btn:not(:disabled):hover {
+#generate-recommendations-btn:not(:disabled):hover {
   background: var(--primary-600);
   transform: translateY(-1px);
 }
 
-/* Status messages - INTEGRATED (For overlays) */
+/* Status messages */
 .status-message {
   padding: 12px 16px;
   border-radius: 8px;
@@ -496,7 +493,7 @@ textarea { width: 100%; min-height: 120px; padding: 12px; border-radius: var(--r
 .status-success { background: #e8f5e9; color: var(--success); border: 1px solid rgba(51,119,81,0.3); }
 .status-error { background: #fff0f0; color: var(--danger); border: 1px solid rgba(204,15,51,0.3); }
 
-/* Loading spinner - INTEGRATED */
+/* Loading spinner */
 .loader {
   display: inline-block;
   width: 16px;
@@ -869,8 +866,8 @@ html, body {
 @media (max-width: 720px) {
   .side-panel { height: auto; }
   .chat-section { min-height: 400px; max-height: none; }
-  .upload-section { height: auto; min-height: 140px; }
-  .rules-section { height: auto; max-height: 400px; }
+  .merged-section { height: auto; max-height: none; }
+  .file-upload-area { min-height: 100px; max-height: 100px; }
   .rules-container { max-height: 250px; }
 }
 
@@ -898,14 +895,13 @@ html[lang="ar"] body {
 }
 
 /* 2. Hybrid Layout: Keep English Structure (LTR) but Arabic Text (RTL) */
-/* We will apply this class to the body of the Arabic page */
 body.keep-ltr-layout .card,
 body.keep-ltr-layout .message,
 body.keep-ltr-layout input,
 body.keep-ltr-layout textarea,
 body.keep-ltr-layout .cv-modal-content {
-  direction: rtl;       /* Text flows right-to-left */
-  text-align: right;    /* Text aligns to the right */
+  direction: rtl;
+  text-align: right;
 }
 
 /* 3. Keep the send icon orientation consistent in Arabic */
@@ -939,4 +935,3 @@ body.keep-ltr-layout .bot-message ul {
 .lang-btn:hover {
   background: rgba(255,255,255,0.3);
 }
-
