@@ -331,6 +331,27 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
   flex-shrink: 0;
 }
 
+/* === UPLOADED CVS SECTION === */
+.uploaded-cvs-section {
+  margin-top: var(--space-l);
+}
+
+.uploaded-cvs-section h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 var(--space-s) 0;
+  padding: 0;
+}
+
+.uploaded-cvs-section h3 i {
+  color: var(--primary);
+  font-size: 1rem;
+}
+
 /* === RULES CONTAINER === */
 .rules-container {
   display: flex;
@@ -512,6 +533,7 @@ button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
 .results-section { margin-top: var(--space-l); padding: var(--space-m); border-radius: var(--radius-md); box-shadow: var(--card-shadow); background: var(--card-bg); }
 .candidate-result { padding: var(--space-s) 0; border-bottom: var(--border); }
 .candidate-result:last-child { border-bottom: none; }
+.candidate-cv-name { color: var(--muted); font-size: 0.9rem; margin: 0 0 var(--space-xs) 0; font-weight: 400; }
 .candidate-name { color: var(--primary); font-size: 1.05rem; margin: 0 0 var(--space-xs) 0; }
 .recommendation-card { background: #fbfbfc; padding: var(--space-s); border-left: 4px solid var(--secondary); border-radius: 8px; margin-bottom: var(--space-s); }
 
