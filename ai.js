@@ -3,6 +3,7 @@
 
 import {
   GEMINI_PROXY_URL,
+  getFinalCertificateCatalog,
 } from "./constants.js";
 
 import {
@@ -376,18 +377,8 @@ export async function analyzeCvsWithAI(cvArray, rulesArray, language = 'en') {
 }
 
 export function displayRecommendations(recommendations, containerEl, resultsSectionEl, language = 'en') {
-  console.log("🎨 displayRecommendations called");
-  console.log("Recommendations:", recommendations);
-  console.log("Container element:", containerEl);
-  console.log("Results section element:", resultsSectionEl);
-  
-  if (!containerEl || !resultsSectionEl) {
-    console.error("❌ Missing required elements!");
-    console.error("containerEl:", containerEl);
-    console.error("resultsSectionEl:", resultsSectionEl);
-    return;
-  }
-  const catalog = certificateCatalog;
+  if (!containerEl || !resultsSectionEl) return;
+  const catalog = getFinalCertificateCatalog(); // Load catalog
   containerEl.innerHTML = "";
 
   if (
@@ -395,29 +386,46 @@ export function displayRecommendations(recommendations, containerEl, resultsSect
     !recommendations.candidates ||
     recommendations.candidates.length === 0
   ) {
-    console.warn("⚠️ No recommendations to display");
     containerEl.innerHTML =
       "<p>No recommendations could be generated. Please check the CVs, rules, and the console for errors.</p>";
   } else {
-    console.log(`✅ Displaying ${recommendations.candidates.length} candidate(s)`);
     recommendations.candidates.forEach((candidate) => {
-      console.log(`👤 Processing candidate: ${candidate.candidateName}`);
-      console.log(`   Recommendations count: ${candidate.recommendations?.length || 0}`);
-      
       const candidateDiv = document.createElement("div");
       candidateDiv.className = "candidate-result";
 
+      // CV name (if available)
+      if (candidate.cvName) {
+        const cvNameDiv = document.createElement("div");
+        cvNameDiv.className = "candidate-cv-name";
+        cvNameDiv.textContent = candidate.cvName;
+        candidateDiv.appendChild(cvNameDiv);
+      }
+
       const nameDiv = document.createElement("h3");
       nameDiv.className = "candidate-name";
-      nameDiv.textContent = candidate.candidateName || "Candidate";
+      const rawName = candidate.candidateName || "Candidate";
+      // Avoid duplicate filename/title: if same as cvName, show a generic label
+      if (
+        candidate.cvName &&
+        rawName.toLowerCase().trim() === candidate.cvName.toLowerCase().trim()
+      ) {
+        nameDiv.textContent = "Candidate";
+      } else {
+        nameDiv.textContent = rawName;
+      }
       candidateDiv.appendChild(nameDiv);
 
       if (candidate.recommendations && candidate.recommendations.length > 0) {
         candidate.recommendations.forEach((rec) => {
+          let displayName = rec.certName;
+          if (language === 'ar') {
+            const found = catalog.find(c => c.name === rec.certName || c.Certificate_Name_EN === rec.certName);
+            if (found && found.nameAr) displayName = found.nameAr;
+          }
           const card = document.createElement("div");
           card.className = "recommendation-card";
           card.innerHTML = `
-            <div class="recommendation-title">${rec.certName}</div>
+            <div class="recommendation-title">${displayName}</div>
             <div class="recommendation-reason">
               <i class="fas fa-lightbulb"></i> ${rec.reason}
             </div>
@@ -445,8 +453,6 @@ export function displayRecommendations(recommendations, containerEl, resultsSect
   }
 
   resultsSectionEl.classList.remove("hidden");
-  resultsSectionEl.style.display = "block"; // Ensure it's visible
-  console.log("✅ Results section displayed");
 }
 
 // Re-export utility used in UI for CV summary
