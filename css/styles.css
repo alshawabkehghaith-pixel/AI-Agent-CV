@@ -54,11 +54,38 @@ img,video{ max-width:100%; height:auto; display:block; }
 
 /* HEADER */
 .site-header { background: linear-gradient(90deg,var(--primary), var(--primary-600)); color: white; }
-.site-header-inner { display:flex; align-items:center; gap:var(--space-m); padding: var(--space-s) 0; }
-.brand { display:flex; gap:var(--space-m); align-items:center; }
+.site-header { padding: 0 var(--space-m); }
+.site-header-inner { 
+  display:flex; 
+  align-items:center; 
+  gap:var(--space-m); 
+  padding: var(--space-s) 0; 
+  justify-content: space-between; /* keep button aligned right on all locales */
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+.brand { display:flex; gap:var(--space-m); align-items:center; flex: 1 1 auto; }
+.brand > div { display:flex; flex-direction:column; gap:4px; min-width:0; }
 .brand i { font-size: 34px; margin-left: 2px; }
-.brand h1 { margin: 0; font-size: 1.25rem; font-weight:600; }
-.tagline { margin: 0; font-size: 0.875rem; color: rgba(255,255,255,0.92); opacity: 0.95; font-weight:300; }
+.brand h1 { 
+  margin: 0; 
+  font-size: 1.25rem; 
+  font-weight: 700; /* ensure bold in both English and Arabic */
+  font-family: 'Roboto', sans-serif; /* force same font across locales */
+  line-height: 1.2; 
+}
+.tagline { 
+  margin: 0; 
+  font-size: 0.875rem; 
+  color: rgba(255,255,255,0.92); 
+  opacity: 0.95; 
+  font-weight:300; 
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* card */
 .card { background: var(--card-bg); border-radius: var(--radius-md); box-shadow: var(--card-shadow); padding: var(--space-m); }
@@ -881,9 +908,9 @@ body.keep-ltr-layout .cv-modal-content {
   text-align: right;    /* Text aligns to the right */
 }
 
-/* 3. Fix the "Send" button icon in Arabic (point left) */
+/* 3. Keep the send icon orientation consistent in Arabic */
 html[lang="ar"] #send-button i {
-  transform: rotate(180deg);
+  transform: none;
 }
 
 /* 4. Ensure list bullets in chat appear correctly */
@@ -912,3 +939,4 @@ body.keep-ltr-layout .bot-message ul {
 .lang-btn:hover {
   background: rgba(255,255,255,0.3);
 }
+
