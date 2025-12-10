@@ -3,6 +3,7 @@
 
 import {
   DEFAULT_RULES,
+  getDefaultRules, // <--- Add this
 } from "./constants.js";
 
 import {
@@ -31,6 +32,50 @@ import {
   callGeminiAPI,
 } from "./ai.js";
 
+
+
+// --- TRANSLATIONS FOR DYNAMIC UI ---
+const UI_TEXT = {
+  en: {
+    experience: "Experience",
+    education: "Education",
+    certifications: "Certifications",
+    skills: "Skills",
+    jobTitle: "Job Title",
+    company: "Company Name",
+    description: "Description",
+    years: "Years",
+    degree: "Degree and Field of study",
+    school: "School",
+    certification: "Certification",
+    skill: "Skill",
+    add: "+ Add",
+    submitSingle: "Submit CV",
+    submitAll: "Submit all CVs"
+  },
+  ar: {
+    experience: "الخبرة المهنية",
+    education: "التعليم",
+    certifications: "الشهادات",
+    skills: "المهارات",
+    jobTitle: "المسمى الوظيفي",
+    company: "اسم الشركة",
+    description: "الوصف",
+    years: "السنوات",
+    degree: "الدرجة ومجال الدراسة",
+    school: "الجامعة / المدرسة",
+    certification: "اسم الشهادة",
+    skill: "المهارة",
+    add: "+ إضافة",
+    submitSingle: "إرسال السيرة الذاتية",
+    submitAll: "إرسال جميع السير الذاتية"
+  }
+};
+
+function getUiText(key) {
+  const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  return UI_TEXT[lang][key] || UI_TEXT['en'][key];
+}
 // ===========================================================================
 // INTEGRATED: Dynamic Business Rules UI Functions (from your code)
 // ===========================================================================
@@ -299,53 +344,56 @@ function renderCvDetails(cv) {
   if (!container) return;
   container.innerHTML = "";
 
+  // Get text for current language
+  const t = (k) => getUiText(k);
+
   const sections = [
     {
       key: "experience",
-      label: "Experience",
+      label: t("experience"),
       fields: [
         {
           name: "jobTitle",
-          placeholder: "Job Title",
+          placeholder: t("jobTitle"),
           className: "cv-field-job-title",
           isBold: true,
         },
         {
           name: "company",
-          placeholder: "Company Name",
+          placeholder: t("company"),
           className: "cv-field-company",
         },
         {
           name: "description",
-          placeholder: "Description",
+          placeholder: t("description"),
           className: "cv-description-textarea",
           multiline: true,
         },
-        { name: "years", placeholder: "Years" },
+        { name: "years", placeholder: t("years") },
       ],
     },
     {
       key: "education",
-      label: "Education",
+      label: t("education"),
       fields: [
         {
           name: "degreeField",
-          placeholder: "Degree and Field of study",
+          placeholder: t("degree"),
           className: "education-degree-input",
           isBold: true,
         },
-        { name: "school", placeholder: "School" },
+        { name: "school", placeholder: t("school") },
       ],
     },
     {
       key: "certifications",
-      label: "Certifications",
-      fields: [{ name: "title", placeholder: "Certification" }],
+      label: t("certifications"),
+      fields: [{ name: "title", placeholder: t("certification") }],
     },
     {
       key: "skills",
-      label: "Skills",
-      fields: [{ name: "title", placeholder: "Skill" }],
+      label: t("skills"),
+      fields: [{ name: "title", placeholder: t("skill") }],
     },
   ];
 
@@ -373,7 +421,7 @@ function renderCvDetails(cv) {
 
     const addBtn = document.createElement("button");
     addBtn.className = "add-btn";
-    addBtn.textContent = `+ Add ${sec.label}`;
+    addBtn.textContent = `${t("add")} ${sec.label}`;
     addBtn.addEventListener("click", () => {
       const emptyItem = {};
       sec.fields.forEach((f) => {
@@ -490,7 +538,7 @@ function openCvModal(allCvResults, initialIndex = 0) {
 
   // Dynamic submit label
   if (submitBtn) {
-    submitBtn.textContent = modalCvData.length > 1 ? "Submit all CVs" : "Submit CV";
+    submitBtn.textContent = modalCvData.length > 1 ? getUiText("submitAll") : getUiText("submitSingle");
   }
 }
 
@@ -498,6 +546,8 @@ function openCvModal(allCvResults, initialIndex = 0) {
 // Main bootstrap
 // ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Detect language
+  const currentLang = document.documentElement.lang || 'en';
   let chatHistory = [];
   let userRules = loadUserRules();
   let uploadedCvs = [];
@@ -573,9 +623,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const admitRulesBtn = document.getElementById("admit-rules-btn");
   const startRecommendingBtn = document.getElementById("start-recommending-btn");
 
-  // INTEGRATED: Initialize rules UI with default rules
-  initializeRulesUI(DEFAULT_RULES);
-  userRules = [...DEFAULT_RULES];
+  // INTEGRATED: Initialize rules UI with default rules based on language
+  const defaultRulesForLang = getDefaultRules(currentLang);
+  
+  // Use saved rules if they exist, otherwise use translated defaults
+  const rulesToDisplay = (userRules && userRules.length > 0) ? userRules : defaultRulesForLang;
+  
+  initializeRulesUI(rulesToDisplay);
+  userRules = [...rulesToDisplay];
 
   // Clear chat history in UI but keep stored messages if desired
   clearChatHistoryDom();
@@ -597,7 +652,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     showTypingIndicator();
 
     try {
-      const enhancedSystemPrompt = buildChatSystemPrompt(uploadedCvs);
+      const enhancedSystemPrompt = buildChatSystemPrompt(uploadedCvs, currentLang);
 
       // CV context snippet
       let enhancedMessage = message;
@@ -944,7 +999,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // Generate recommendations with current rules (empty array if no rules)
-        const recommendations = await analyzeCvsWithAI(uploadedCvs, userRules);
+        const recommendations = await analyzeCvsWithAI(uploadedCvs, userRules, currentLang);
 
         // Persist recommendations for chat grounding
         lastRecommendations = recommendations;
@@ -954,7 +1009,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayRecommendations(
           recommendations,
           recommendationsContainer,
-          resultsSection
+          resultsSection,
+          currentLang
         );
 
         updateStatus(rulesStatus, "Recommendations generated successfully!");

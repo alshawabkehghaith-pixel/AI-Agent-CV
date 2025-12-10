@@ -29,8 +29,26 @@ export function getFinalCertificateCatalog() {
 }
 
 // Default business rules (kept concise as a sensible starting point)
-export const DEFAULT_RULES = [
+// constants.js (Bottom of file)
+
+// Default business rules (English)
+export const DEFAULT_RULES_EN = [
   "Start with foundational certifications before advanced options.",
   "Align recommendations to the candidate's current or target role.",
   "Avoid overlapping certifications unless the user explicitly asks."
 ];
+
+// Default business rules (Arabic)
+export const DEFAULT_RULES_AR = [
+  "ابدأ بالشهادات التأسيسية قبل الخيارات المتقدمة.",
+  "قم بمحاذاة التوصيات مع الدور الحالي أو المستهدف للمرشح.",
+  "تجنب الشهادات المتداخلة ما لم يطلب المستخدم ذلك صراحة."
+];
+
+// Export a helper to get the right ones
+export function getDefaultRules(lang = 'en') {
+  return lang === 'ar' ? DEFAULT_RULES_AR : DEFAULT_RULES_EN;
+}
+
+// Keep this for backward compatibility if needed, but we will use the function above
+export const DEFAULT_RULES = DEFAULT_RULES_EN;

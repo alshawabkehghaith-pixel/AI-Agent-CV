@@ -102,9 +102,13 @@ export function hideTypingIndicator() {
 // ---------------------------------------------------------------------------
 // Chat context builders
 // ---------------------------------------------------------------------------
-export function buildChatSystemPrompt(uploadedCvs) {
+export function buildChatSystemPrompt(uploadedCvs,language = 'en') {
   const catalogString = getCatalogAsPromptString();
   const hasCvContext = uploadedCvs.length > 0;
+  // Add Arabic instruction if needed
+  const langInstruction = language === 'ar' 
+    ? "IMPORTANT: You MUST answer strictly in Arabic. Explain technical terms in Arabic, but keep specific Certification Names in English as they appear in the catalog."
+    : "";
   const cvContext = hasCvContext
     ? `\n\n**Available CV Context:**\nThe user has uploaded ${uploadedCvs.length} CV(s). You can reference their experience, skills, and background when making recommendations.`
     : `\n\n**Note:** The user has not uploaded a CV yet. You can still answer general questions about certifications, but for personalized recommendations, encourage them to upload their CV.`;
@@ -113,6 +117,7 @@ export function buildChatSystemPrompt(uploadedCvs) {
 
 **Available Certifications Catalog:**
 ${catalogString}
+${langInstruction}
 ${cvContext}
 
 When recommending certifications, always:
@@ -277,15 +282,18 @@ Remember:
 // ---------------------------------------------------------------------------
 // Recommendation engine
 // ---------------------------------------------------------------------------
-export function buildAnalysisPromptForCvs(cvArray, rulesArray) {
+export function buildAnalysisPromptForCvs(cvArray, rulesArray, language = 'en') {
   const catalogString = getCatalogAsPromptString();
-
+  // Add Arabic instruction
+  const langInstruction = language === 'ar'
+    ? "Output the 'reason' field strictly in Arabic. Keep 'candidateName' and 'certName' in their original text."
+    : "Output the 'reason' field in English.";
   return `
 ${ANALYSIS_SYSTEM_PROMPT.trim()}
 
 **Catalog of Certifications:**
 ${catalogString}
-
+${langInstruction}
 **Business Rules:**
 ${rulesArray && rulesArray.length > 0
       ? rulesArray.map((r) => `- ${r}`).join("\n")
@@ -333,8 +341,8 @@ Begin your response now with the JSON object only:
 `;
 }
 
-export async function analyzeCvsWithAI(cvArray, rulesArray) {
-  const analysisPrompt = buildAnalysisPromptForCvs(cvArray, rulesArray || []);
+export async function analyzeCvsWithAI(cvArray, rulesArray, language = 'en') {
+  const analysisPrompt = buildAnalysisPromptForCvs(cvArray, rulesArray || [], language);
   const rawResponse = await callGeminiAPI(analysisPrompt, [], "");
   
   // Log raw response for debugging
@@ -372,9 +380,9 @@ export async function analyzeCvsWithAI(cvArray, rulesArray) {
   return recommendations;
 }
 
-export function displayRecommendations(recommendations, containerEl, resultsSectionEl) {
+export function displayRecommendations(recommendations, containerEl, resultsSectionEl, language = 'en') {
   if (!containerEl || !resultsSectionEl) return;
-
+  const catalog = getFinalCertificateCatalog(); // Load catalog
   containerEl.innerHTML = "";
 
   if (
@@ -396,6 +404,11 @@ export function displayRecommendations(recommendations, containerEl, resultsSect
 
       if (candidate.recommendations && candidate.recommendations.length > 0) {
         candidate.recommendations.forEach((rec) => {
+          let displayName = rec.certName;
+          if (language === 'ar') {
+            const found = catalog.find(c => c.name === rec.certName || c.Certificate_Name_EN === rec.certName);
+            if (found && found.nameAr) displayName = found.nameAr;
+          }
           const card = document.createElement("div");
           card.className = "recommendation-card";
           card.innerHTML = `

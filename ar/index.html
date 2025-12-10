@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillMatch Pro - العربية</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner container" style="justify-content: space-between;">
+      
+      <div class="brand">
+        <i class="fas fa-user-graduate"></i>
+        <div>
+          <h1>SkillMatch Pro</h1>
+          <p class="tagline">توصيات التدريب والشهادات المدعومة بالذكاء الاصطناعي</p>
+        </div>
+      </div>
+
+      <div>
+        <a href="../index.html" class="lang-btn">
+          English <i class="fas fa-globe"></i>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="main-content">
+      <section class="chat-section card" aria-label="المساعد الذكي">
+        <div class="section-header">
+          <h2><i class="fas fa-comments"></i> المساعد الذكي</h2>
+        </div>
+    
+        <div id="chat-messages" class="chat-messages" aria-live="polite">
+          <div class="message bot-message">
+            مرحباً! أنا مساعد التدريب والشهادات الخاص بك. يمكنني مساعدتك في:
+            <ul>
+              <li>مناقشة البرامج التدريبية والشهادات</li>
+              <li>تحليل السيرة الذاتية للحصول على توصيات مناسبة</li>
+              <li>تعديل التوصيات بناءً على قواعد عملك</li>
+            </ul>
+            كيف يمكنني مساعدتك اليوم؟
+          </div>
+        </div>
+    
+        <div class="chat-input">
+          <input id="user-input" type="text" placeholder="اسأل عن البرامج، ارفع السير الذاتية..." autocomplete="off" />
+          <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel-section card upload-section">
+          <h3><i class="fas fa-file-upload"></i> رفع السير الذاتية</h3>
+          <div id="cv-upload-area" class="file-upload-area" tabindex="0">
+            <i class="fas fa-cloud-upload-alt fa-2x"></i>
+            <p class="muted">اسحب وأفلت الملفات هنا أو انقر للتصفح</p>
+            <input id="file-input" type="file" multiple accept=".pdf,.docx,.txt" />
+            <div id="upload-status"></div>
+          </div>
+          <button id="analyze-button" class="primary action-full"><i class="fas fa-brain"></i> تحليل السير الذاتية</button>
+          <div id="submitted-cv-bubbles" class="submitted-cv-bubbles" aria-live="polite"></div>
+        </section>
+    
+        <section class="panel-section card rules-section">
+          <h3><i class="fas fa-gavel"></i> قواعد العمل</h3>
+          <div id="rules-container" class="rules-container">
+            <div id="rules-status"></div>
+          </div>
+          <button id="add-rule-btn" type="button" class="add-rule-btn">
+            <i class="fas fa-plus"></i> إضافة قاعدة
+          </button>
+          <div class="rules-actions">
+            <button id="admit-rules-btn" class="primary action-half">
+              <i class="fas fa-check"></i> حفظ القواعد
+            </button>
+            <button id="start-recommending-btn" class="primary action-half" disabled>
+              <i class="fas fa-star"></i> إصدار التوصيات
+            </button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <div id="cvModal" class="cv-modal" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle" hidden>
+      <div class="cv-modal-content">
+        <button class="cv-close-btn" aria-label="إغلاق">&times;</button>
+        <h2 id="cvModalTitle">مراجعة التحليل</h2>
+        <div id="cvTabsContainer" class="cv-tabs" role="tablist"></div>
+        <div id="cvResultsContainer" class="cv-results" role="region"></div>
+        <button id="submitCvReview" class="cv-submit-btn">إرسال</button>
+      </div>
+    </div>
+
+    <section class="results-section hidden" id="results-section">
+      <h2><i class="fas fa-star"></i> التوصيات</h2>
+      <div id="recommendations-container"></div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <script src="../config.js"></script>
+
+  <script type="module" src="../constants.js"></script>
+  <script type="module" src="../prompts.js"></script>
+  <script type="module" src="../storage-catalog.js"></script>
+  <script type="module" src="../ai.js"></script>
+  <script type="module" src="../ui.js"></script>
+</body>
+</html>

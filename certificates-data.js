@@ -16,7 +16,8 @@ export async function loadCertificates() {
   }
   
   // Load certificates from JSON file
-  loadPromise = fetch("./Certificates.json")
+  // Uses import.meta.url to find the file relative to THIS script, not the HTML page
+  loadPromise = fetch(new URL('./Certificates.json', import.meta.url))
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to load certificates: ${response.statusText}`);
